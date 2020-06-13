@@ -60,72 +60,73 @@ for this_state in state_dict:
 
         dcr_dict[dcr_place] = base_url+dcr_link  # https://spotcrime.com/vt/burlington/daily
 
-        ''' Iterate through the place page 2 times. Once with basic link
-            and once with basic/more link so as to get all the reports.
-            Since we are adding this to a dict {date: link}, the repeated
-            dates would overwrite the dict with same value for the key.'''
-        # Alabama -> Alexander City
-        for this_place in dcr_dict:
-            logging.info(f"Getting stats for {this_place}")
-            place_page = requests.get(dcr_dict[this_place])
-            if (place_page.status_code == 200):
-                page = place_page.text
-            else:
-                logging.error(f"{dcr_dict[this_place]} reported back {place_page.status_code}")
-                raise ValueError
-            place_soup = bs(page, "lxml")
+    ''' Iterate through the place page 2 times. Once with basic link
+        and once with basic/more link so as to get all the reports.
+        Since we are adding this to a dict {date: link}, the repeated
+        dates would overwrite the dict with same value for the key.'''
+    # Alabama -> Alexander City
+    for this_place in dcr_dict:
+        logging.info(f"Getting stats for {this_place}")
+        place_page = requests.get(dcr_dict[this_place])
+        assert this_place in place_page.url f'{this_place} is not in {place_page.url}'
+        if (place_page.status_code == 200):
+            page = place_page.text
+        else:
+            logging.error(f"{dcr_dict[this_place]} reported back {place_page.status_code}")
+            raise ValueError
+        place_soup = bs(page, "lxml")
 
-            # Links for one place which is part of 1 state
-            crime_blotter_table = place_soup.find(class_='main-content-column')
+        # Links for one place which is part of 1 state
+        crime_blotter_table = place_soup.find(class_='main-content-column')
 
-            # Some places have no data
-            if crime_blotter_table.find('h3').text == 'No data found.':
-                logging.error(f"{this_state}->{this_place} had no data")
-                break  #  Since this place has no data go back to the next place.
-            # print(crime_blotter_table)
-            cb_regex = re.compile('Crime Blotter')
-            cbr_date_dict = {}
-            # Fill the date-link dict for the place
-            for cbrd_text in crime_blotter_table.find_all(text=cb_regex):
-                cbrd_link = cbrd_text.previous['href']
-                cbr_date_dict[cbrd_text.split(' ')[0]] = base_url+cbrd_link
-                # cbr_date_dict['06/04/2019']
+        # Some places have no data
+        if crime_blotter_table.find('h3').text == 'No data found.':
+            logging.error(f"{this_state}->{this_place} had no data")
+            break  #  Since this place has no data go back to the next place.
+        # print(crime_blotter_table)
+        cb_regex = re.compile('Crime Blotter')
+        cbr_date_dict = {}
+        # Fill the date-link dict for the place
+        for cbrd_text in crime_blotter_table.find_all(text=cb_regex):
+            cbrd_link = cbrd_text.previous['href']
+            cbr_date_dict[cbrd_text.split(' ')[0]] = base_url+cbrd_link
+            # cbr_date_dict['06/04/2019']
 
-            xtra_page = base_url+dcr_link+"/more"  # https://spotcrime.com/vt/burlington/daily/more
-            # Alabama -> Alexander City (again but with more dates in the archives)
-            
-            logging.info(f"Getting more stats for {this_place}")
-            place_page = requests.get(xtra_page)
+        xtra_page = base_url+dcr_link+"/more"  # https://spotcrime.com/vt/burlington/daily/more
+        # Alabama -> Alexander City (again but with more dates in the archives)
+        
+        logging.info(f"Getting more stats for {this_place}")
+        place_page = requests.get(xtra_page)
 
-            if (place_page.status_code == 200):
-                page = place_page.text
-            else:
-                logging.error(f"{xtra_page} reported back {place_page.status_code}")
-                # raise ValueError
-                pass
-            place_soup = bs(page, "lxml")
+        if (place_page.status_code == 200):
+            page = place_page.text
+        else:
+            logging.error(f"{xtra_page} reported back {place_page.status_code}")
+            # raise ValueError
+            pass
+        place_soup = bs(page, "lxml")
 
-            # Links for one place which is part of 1 state
-            crime_blotter_table = place_soup.find(class_='main-content-column')
+        # Links for one place which is part of 1 state
+        crime_blotter_table = place_soup.find(class_='main-content-column')
 
-            # Some places have no data
-            if crime_blotter_table.find('h3').text == 'No data found.':
-                dt_array = np.array([None, None, None, None,None, None, this_place,this_state])
-                empty_df = pd.DataFrame(dt_array.reshape(1,-1))
-                logging.error(f"{this_state}->{this_place} had no data")
-                try:
-                    df_new = empty_df.append(df_new)  #  will fail if there is no df_new dataframe.
-                except NameError:
-                    df_new = empty_df
-                break  
+        # Some places have no data
+        if crime_blotter_table.find('h3').text == 'No data found.':
+            dt_array = np.array([None, None, None, None,None, None, this_place,this_state])
+            empty_df = pd.DataFrame(dt_array.reshape(1,-1))
+            logging.error(f"{this_state}->{this_place} had no data")
+            try:
+                df_new = df_new.append(empty_df)
+            except NameError:
+                df_new = empty_df
+            break  
 
-            # print(crime_blotter_table)
-            cb_regex = re.compile('Crime Blotter')
-            # Fill the date-link dict for the place
-            for cbrd_text in crime_blotter_table.find_all(text=cb_regex):
-                cbrd_link = cbrd_text.previous['href']
-                cbr_date_dict[cbrd_text.split(' ')[0]] = base_url+cbrd_link
-                # cbr_date_dict['06/04/2019']
+        # print(crime_blotter_table)
+        cb_regex = re.compile('Crime Blotter')
+        # Fill the date-link dict for the place
+        for cbrd_text in crime_blotter_table.find_all(text=cb_regex):
+            cbrd_link = cbrd_text.previous['href']
+            cbr_date_dict[cbrd_text.split(' ')[0]] = base_url+cbrd_link
+            # cbr_date_dict['06/04/2019']
 
         ''' Now that the dict of {date: link} is complete, go to
             each link and grab the data into a dataframe'''
@@ -138,7 +139,7 @@ for this_state in state_dict:
                 logging.error(f"Skipping {this_state}->{this_place}->{this_date}")
                 continue
             plc_chk = this_place.split("_")[0]
-            assert plc_chk in cbr_date_dict[this_date], "Mismatch between link {cbr_date_dict[this_date]} \n and current place {this_place} we are looking at!"
+            assert plc_chk in cbr_date_dict[this_date], f"Mismatch between link: {cbr_date_dict[this_date]}\nand current place: {this_place} we are looking at!"
 
             date_page = requests.get(cbr_date_dict[this_date])
 
