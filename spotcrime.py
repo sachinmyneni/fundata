@@ -91,15 +91,20 @@ for this_state in state_dict:
                 cbr_date_dict[cbrd_text.split(' ')[0]] = base_url+cbrd_link
                 # cbr_date_dict['06/04/2019']
 
-        dcr_dict[dcr_place] = base_url+dcr_link+"/more"  # https://spotcrime.com/vt/burlington/daily/more
-        # Alabama -> Alexander City (again but with more dates in the archives)
-        for this_place in dcr_dict:
+            xtra_page = base_url+dcr_link+"/more"  # https://spotcrime.com/vt/burlington/daily/more
+            # Alabama -> Alexander City (again but with more dates in the archives)
+            
             logging.info(f"Getting more stats for {this_place}")
-            place_page = requests.get(dcr_dict[this_place])
+            place_page = requests.get(xtra_page)
+
+
+        # for this_place in dcr_dict:   #  << I SHOULD NOT BE DOING THIS. I AM RE-GETTING THE KEY
+        #     logging.info(f"Getting more stats for {this_place}")
+        #     place_page = requests.get(dcr_dict[this_place])
             if (place_page.status_code == 200):
                 page = place_page.text
             else:
-                logging.error(f"{dcr_dict[this_place]} reported back {place_page.status_code}")
+                logging.error(f"{xtra_page} reported back {place_page.status_code}")
                 # raise ValueError
                 pass
             place_soup = bs(page, "lxml")
