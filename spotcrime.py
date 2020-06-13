@@ -81,7 +81,7 @@ for this_state in state_dict:
             # Some places have no data
             if crime_blotter_table.find('h3').text == 'No data found.':
                 logging.error(f"{this_state}->{this_place} had no data")
-                continue
+                break  #  Since this place has no data go back to the next place.
             # print(crime_blotter_table)
             cb_regex = re.compile('Crime Blotter')
             cbr_date_dict = {}
@@ -97,10 +97,6 @@ for this_state in state_dict:
             logging.info(f"Getting more stats for {this_place}")
             place_page = requests.get(xtra_page)
 
-
-        # for this_place in dcr_dict:   #  << I SHOULD NOT BE DOING THIS. I AM RE-GETTING THE KEY
-        #     logging.info(f"Getting more stats for {this_place}")
-        #     place_page = requests.get(dcr_dict[this_place])
             if (place_page.status_code == 200):
                 page = place_page.text
             else:
@@ -117,7 +113,12 @@ for this_state in state_dict:
                 dt_array = np.array([None, None, None, None,None, None, this_place,this_state])
                 empty_df = pd.DataFrame(dt_array.reshape(1,-1))
                 logging.error(f"{this_state}->{this_place} had no data")
-                continue
+                try:
+                    df_new = empty_df.append(df_new)  #  will fail if there is no df_new dataframe.
+                except NameError:
+                    df_new = empty_df
+                break  
+
             # print(crime_blotter_table)
             cb_regex = re.compile('Crime Blotter')
             # Fill the date-link dict for the place
@@ -138,7 +139,7 @@ for this_state in state_dict:
                 continue
             plc_chk = this_place.split("_")[0]
             assert plc_chk in cbr_date_dict[this_date], "Mismatch between link {cbr_date_dict[this_date]} \n and current place {this_place} we are looking at!"
- 
+
             date_page = requests.get(cbr_date_dict[this_date])
 
             if (date_page.status_code == 200):
