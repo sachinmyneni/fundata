@@ -6,6 +6,7 @@ import numpy as np
 from random import randint
 from time import sleep
 import logging
+import os
 
 
 def get_contents(url: str, filter: str) -> dict:
@@ -18,12 +19,26 @@ logging.basicConfig(filename="spotcrime_scrape.log", level=logging.DEBUG,
                     filemode='a', format='%(asctime)s %(message)s')
 
 base_url = 'https://spotcrime.com'
-spotcrime_df = pd.read_csv('spotcrime.csv', header=0)
-print(spotcrime_df.head())
+
+
+crime_file = './spotcrime.csv'
+# spotcrime_df = pd.read_csv(crime_file, header=0)
+
+try:
+    spotcrime_df = pd.read_csv(crime_file, header=0)
+    print(spotcrime_df.head())
+except FileNotFoundError:
+    logging.info(f"{crime_file} not found. Will create new one")
+    pass
+except pd.errors.EmptyDataError:
+    logging.error(f"{crime_file} had no data. Renaming and will create new one")
+    os.rename(crime_file,crime_file+"_bad")
+    pass
+
 empty_df = pd.DataFrame()
 try:
     response = requests.get(base_url)
-except SSLError:
+except requests.exceptions.SSLError:
     print("Looks like SSL libraries are not installed?")
     exit
 
@@ -133,11 +148,16 @@ for this_state in state_dict:
         # Alabama -> Alexander City -> 2020/04/01
         for this_date in cbr_date_dict:
             this_short_date = '/'.join(this_date.split('/')[:2]) + '/' + this_date.split('/')[-1][2:] #  02/03/19 from 02/03/2019
-            if ((spotcrime_df['Date'].str.contains(this_short_date)) &
-                (spotcrime_df['State'] == this_state) &
-                (spotcrime_df['Place'] == this_place)).any():
-                logging.error(f"Skipping {this_state}->{this_place}->{this_date}")
-                continue
+            # if spotcrime_df in locals():
+            try:
+                if ((spotcrime_df['Date'].str.contains(this_short_date)) &
+                    (spotcrime_df['State'] == this_state) &
+                    (spotcrime_df['Place'] == this_place)).any():
+                    logging.error(f"Skipping {this_state}->{this_place}->{this_date}")
+                    continue
+            except NameError:
+                logging.info("No spotcrime_df defined? Perhaps first pass")
+                pass  # no spotcrime_df defined?
             plc_chk = this_place.split("_")[0]
             assert plc_chk in cbr_date_dict[this_date], f"Mismatch between link: {cbr_date_dict[this_date]}\nand current place we are looking at: {this_place}!"
 
@@ -169,7 +189,7 @@ for this_state in state_dict:
                 logging.error(f"{this_state} -> {this_place} -> {this_date} had no data")
                 continue
 
-            with open('spotcrime.csv', 'a') as sc_f:
+            with open(crime_file, 'a') as sc_f:
                 df_new.to_csv(sc_f, header=sc_f.tell() == 0)
                 empty_df = df_new[0:0]  # empty the empty_df
 
