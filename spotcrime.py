@@ -156,7 +156,7 @@ for this_state in state_dict:
                     logging.error(f"Skipping {this_state}->{this_place}->{this_date}")
                     continue
             except NameError:
-                logging.info("No spotcrime_df defined? Perhaps first pass")
+                # logging.info("No spotcrime_df defined? Perhaps first pass")
                 pass  # no spotcrime_df defined?
             plc_chk = this_place.split("_")[0]
             assert plc_chk in cbr_date_dict[this_date], f"Mismatch between link: {cbr_date_dict[this_date]}\nand current place we are looking at: {this_place}!"
