@@ -34,6 +34,8 @@ except pd.errors.EmptyDataError:
 print(f"Shape before filter: {spotcrime_df.shape}")
 
 # spotcrime_df.filter(badrow(spotcrime_df['Address'],spotcrime_df['Place']))
-df_new = spotcrime_df.apply(lambda x: x['Place'].split('_')[0].lower() in x['Address'].lower(), axis=0)
+df_new = spotcrime_df[spotcrime_df.apply(lambda x: x['Place'].split('_')[0].lower() in x['Address'].lower(), axis=1)]
 
 print(f"Shape after filter: {df_new.shape}")
+
+df_new.to_csv('sc_cleaned.csv',header=True, index=False)
