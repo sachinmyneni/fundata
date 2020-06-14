@@ -68,7 +68,7 @@ for this_state in state_dict:
     for this_place in dcr_dict:
         logging.info(f"Getting stats for {this_place}")
         place_page = requests.get(dcr_dict[this_place])
-        assert this_place in place_page.url f'{this_place} is not in {place_page.url}'
+        assert this_place.split("_")[0] in place_page.url, f"{this_place} is not in {place_page.url}"
         if (place_page.status_code == 200):
             page = place_page.text
         else:
@@ -92,7 +92,7 @@ for this_state in state_dict:
             cbr_date_dict[cbrd_text.split(' ')[0]] = base_url+cbrd_link
             # cbr_date_dict['06/04/2019']
 
-        xtra_page = base_url+dcr_link+"/more"  # https://spotcrime.com/vt/burlington/daily/more
+        xtra_page = dcr_dict[this_place]+"/more"  # https://spotcrime.com/vt/burlington/daily/more
         # Alabama -> Alexander City (again but with more dates in the archives)
         
         logging.info(f"Getting more stats for {this_place}")
@@ -139,7 +139,7 @@ for this_state in state_dict:
                 logging.error(f"Skipping {this_state}->{this_place}->{this_date}")
                 continue
             plc_chk = this_place.split("_")[0]
-            assert plc_chk in cbr_date_dict[this_date], f"Mismatch between link: {cbr_date_dict[this_date]}\nand current place: {this_place} we are looking at!"
+            assert plc_chk in cbr_date_dict[this_date], f"Mismatch between link: {cbr_date_dict[this_date]}\nand current place we are looking at: {this_place}!"
 
             date_page = requests.get(cbr_date_dict[this_date])
 
