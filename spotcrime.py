@@ -7,6 +7,8 @@ from random import randint
 from time import sleep
 import logging
 import os
+import urllib3
+import socket
 
 
 def get_contents(url: str, filter: str) -> dict:
@@ -27,6 +29,7 @@ crime_file = './spotcrime.csv'
 try:
     spotcrime_df = pd.read_csv(crime_file, header=0)
     print(spotcrime_df.head())
+    print(f"Size of the current data: {spotcrime_df.shape}")
 except FileNotFoundError:
     logging.info(f"{crime_file} not found. Will create new one")
     pass
@@ -40,6 +43,7 @@ try:
     response = requests.get(base_url)
 except requests.exceptions.SSLError:
     print("Looks like SSL libraries are not installed?")
+    print("????????Or a mismatch in hostname??????????")
     exit
 
 if (response.status_code == 200):
@@ -161,7 +165,24 @@ for this_state in state_dict:
             plc_chk = this_place.split("_")[0]
             assert plc_chk in cbr_date_dict[this_date], f"Mismatch between link: {cbr_date_dict[this_date]}\nand current place we are looking at: {this_place}!"
 
-            date_page = requests.get(cbr_date_dict[this_date])
+            try:
+                date_page = requests.get(cbr_date_dict[this_date])
+            except socket.gaierror:
+                logging.error(f"Unable to reach: {cbr_date_dict[this_date]}")
+                continue
+            except urllib3.exceptions.NewConnectionError:
+                logging.error(f"Unable to connect to: {cbr_date_dict[this_date]}")
+                sleep(30*60)
+                date_page = requests.get(cbr_date_dict[this_date])
+            except requests.exceptions.ConnectionError:
+                logging.error(f"Unable to connect to: {cbr_date_dict[this_date]}")
+                date_page = requests.get(cbr_date_dict[this_date])
+            except urllib3.exceptions.MaxRetryError:
+                logging.error("Max retry attempts reached.. bugging out..")
+                continue
+            except http.client.RemoteDisconnected:
+                logging.fatal(f"Remote server disconnected from {cbr_date_dict[this_date]}")
+                exit
 
             if (date_page.status_code == 200):
                 page = date_page.text
