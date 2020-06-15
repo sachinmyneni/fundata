@@ -154,9 +154,9 @@ for this_state in state_dict:
             this_short_date = '/'.join(this_date.split('/')[:2]) + '/' + this_date.split('/')[-1][2:] #  02/03/19 from 02/03/2019
             # if spotcrime_df in locals():
             try:
-                if ((spotcrime_df['Date'].str.contains(this_short_date)) &
-                    (spotcrime_df['State'] == this_state) &
-                    (spotcrime_df['Place'] == this_place)).any():
+                if ((spotcrime_df['State'] == this_state) &
+                    (spotcrime_df['Place'] == this_place) &
+                    (spotcrime_df['Date'].str.contains(this_short_date))).any():
                     logging.error(f"Skipping {this_state}->{this_place}->{this_date}")
                     continue
             except NameError:
