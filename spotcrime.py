@@ -208,7 +208,14 @@ for this_state in state_dict:
                 sleep(randint(1, 10))
             except AttributeError:
                 logging.error(f"{this_state} -> {this_place} -> {this_date} had no data")
-                continue
+                dt_array = np.array([None, None, None, this_date,None, None, this_place, this_state])
+                empty_df = pd.DataFrame(dt_array.reshape(1,-1))
+                try:
+                    df_new = df_new.append(empty_df)
+                except NameError:
+                    df_new = empty_df
+                break  
+                    continue
 
             with open(crime_file, 'a') as sc_f:
                 df_new.to_csv(sc_f, header=sc_f.tell() == 0)
