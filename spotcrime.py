@@ -130,7 +130,7 @@ for this_state in state_dict:
 
         # Some places have no data
         if crime_blotter_table.find('h3').text == 'No data found.':
-            dt_array = np.array([None, None, None, None,None, None, this_place,this_state])
+            dt_array = np.array([None, None, None,None, None, this_place,this_state])
             empty_df = pd.DataFrame(dt_array.reshape(1,-1))
             logging.error(f"{this_state}->{this_place} had no data")
             try:
@@ -208,7 +208,7 @@ for this_state in state_dict:
                 sleep(randint(1, 10))
             except AttributeError:
                 logging.error(f"{this_state} -> {this_place} -> {this_date} had no data")
-                dt_array = np.array([None, None, None, this_date,None, None, this_place, this_state])
+                dt_array = np.array([None, None, this_date,None, None, this_place, this_state])
                 empty_df = pd.DataFrame(dt_array.reshape(1,-1))
                 try:
                     df_new = df_new.append(empty_df)
