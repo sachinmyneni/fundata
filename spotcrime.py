@@ -12,12 +12,6 @@ import socket
 import random
 
 
-def get_contents(url: str, filter: str) -> dict:
-    """ For a HTML code return a dict of possible values of interest
-        based on filter. If none found, return None """
-    pass
-
-
 logging.basicConfig(filename="spotcrime_scrape.log", level=logging.DEBUG,
                     filemode='a', format='%(asctime)s %(message)s')
 
