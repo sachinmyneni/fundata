@@ -9,6 +9,7 @@ import logging
 import os
 import urllib3
 import socket
+import random
 
 
 def get_contents(url: str, filter: str) -> dict:
@@ -57,12 +58,13 @@ state_tag_list = soup.find(id="states-list-menu").find_all('a')
 state_dict = {s.text: base_url+s.get('href') for s in state_tag_list}
 
 # Alabama
-for this_state in state_dict:
-    state_page = requests.get(state_dict[this_state])
+while True:
+    (this_state,state_page_link) = random.choice(list(state_dict.items()))
+    state_page = requests.get(state_page_link)
     if (state_page.status_code == 200):
         page = state_page.text
     else:
-        logging.error(f"{state_dict[this_state]} reported back {state_page.status_code}")
+        logging.error(f"{state_page_link} reported back {state_page.status_code}")
         # raise ValueError
         continue
 
@@ -84,14 +86,15 @@ for this_state in state_dict:
         Since we are adding this to a dict {date: link}, the repeated
         dates would overwrite the dict with same value for the key.'''
     # Alabama -> Alexander City
-    for this_place in dcr_dict:
+    while True:
+        (this_place,this_place_link) = random.choice(list(dcr_dict.items()))
         logging.info(f"Getting stats for {this_place}")
-        place_page = requests.get(dcr_dict[this_place])
+        place_page = requests.get(this_place_link)
         assert this_place.split("_")[0] in place_page.url, f"{this_place} is not in {place_page.url}"
         if (place_page.status_code == 200):
             page = place_page.text
         else:
-            logging.error(f"{dcr_dict[this_place]} reported back {place_page.status_code}")
+            logging.error(f"{this_place_link} reported back {place_page.status_code}")
             raise ValueError
         place_soup = bs(page, "lxml")
 
