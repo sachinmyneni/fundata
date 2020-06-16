@@ -214,8 +214,6 @@ for this_state in state_dict:
                     df_new = df_new.append(empty_df)
                 except NameError:
                     df_new = empty_df
-                break  
-                    continue
 
             with open(crime_file, 'a') as sc_f:
                 df_new.to_csv(sc_f, header=sc_f.tell() == 0)
