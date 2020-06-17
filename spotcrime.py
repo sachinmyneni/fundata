@@ -53,7 +53,7 @@ state_dict = {s.text: base_url+s.get('href') for s in state_tag_list}
 
 # Alabama
 while True:
-    (this_state,state_page_link) = random.sample(list(state_dict.items()),1)
+    [(this_state,state_page_link)] = random.sample(list(state_dict.items()),1)
     state_page = requests.get(state_page_link)
     if (state_page.status_code == 200):
         page = state_page.text
@@ -81,7 +81,7 @@ while True:
         dates would overwrite the dict with same value for the key.'''
     # Alabama -> Alexander City
     while True:
-        (this_place,this_place_link) = random.sample(list(dcr_dict.items()),1)
+        [(this_place,this_place_link)] = random.sample(list(dcr_dict.items()),1)
         logging.info(f"Getting stats for {this_place}")
         place_page = requests.get(this_place_link)
         assert this_place.split("_")[0] in place_page.url, f"{this_place} is not in {place_page.url}"
