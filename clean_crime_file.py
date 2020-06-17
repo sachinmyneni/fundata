@@ -3,10 +3,7 @@ import re
 import logging
 
 def badrow(address: str, city: str) -> bool:
-    if city.split('_')[0].lower() in address.lower():
-        return False
-    else:
-        return True
+    return city.split('_')[0].lower() not in address.lower()
 
 # logging.basicConfig(filename="spotcrime_scrape.log", level=logging.DEBUG,
 #                     filemode='a', format='%(asctime)s %(message)s')
