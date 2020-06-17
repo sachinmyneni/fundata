@@ -173,13 +173,15 @@ while True:
                 date_page = requests.get(cbr_date_dict[this_date])
             except requests.exceptions.ConnectionError:
                 logging.error(f"Unable to connect to: {cbr_date_dict[this_date]}")
-                date_page = requests.get(cbr_date_dict[this_date])
+                sleep(30*60)
+                continue
             except urllib3.exceptions.MaxRetryError:
                 logging.error("Max retry attempts reached.. bugging out..")
                 continue
             except http.client.RemoteDisconnected:
                 logging.fatal(f"Remote server disconnected from {cbr_date_dict[this_date]}")
-                exit
+                sleep(30*60)
+                continue
 
             if (date_page.status_code == 200):
                 page = date_page.text
