@@ -168,9 +168,9 @@ while True:
                 logging.error(f"Unable to reach: {cbr_date_dict[this_date]}")
                 continue
             except urllib3.exceptions.NewConnectionError:
-                logging.error(f"Unable to connect to: {cbr_date_dict[this_date]}")
+                logging.error(f"Unable to connect to: {cbr_date_dict[this_date]} for the first time")
                 sleep(30*60)
-                date_page = requests.get(cbr_date_dict[this_date])
+                continue
             except requests.exceptions.ConnectionError:
                 logging.error(f"Unable to connect to: {cbr_date_dict[this_date]}")
                 sleep(30*60)
