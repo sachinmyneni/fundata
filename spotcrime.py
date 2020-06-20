@@ -10,6 +10,7 @@ import os
 import urllib3
 import socket
 import random
+import break_up_csv as buc
 
 
 logging.basicConfig(filename="spotcrime_scrape.log", level=logging.DEBUG,
@@ -18,22 +19,7 @@ logging.basicConfig(filename="spotcrime_scrape.log", level=logging.DEBUG,
 base_url = 'https://spotcrime.com'
 
 
-crime_file = './spotcrime.csv'
-# spotcrime_df = pd.read_csv(crime_file, header=0)
 
-try:
-    spotcrime_df = pd.read_csv(crime_file, header=0)
-    print(spotcrime_df.head())
-    print(f"Size of the current data: {spotcrime_df.shape}")
-except FileNotFoundError:
-    logging.info(f"{crime_file} not found. Will create new one")
-    pass
-except pd.errors.EmptyDataError:
-    logging.error(f"{crime_file} had no data. Renaming and will create new one")
-    os.rename(crime_file,crime_file+"_bad")
-    pass
-
-empty_df = pd.DataFrame()
 try:
     response = requests.get(base_url)
 except requests.exceptions.SSLError:
@@ -53,14 +39,35 @@ state_dict = {s.text: base_url+s.get('href') for s in state_tag_list}
 
 # Alabama
 while True:
+
     [(this_state,state_page_link)] = random.sample(list(state_dict.items()),1)
+    
     state_page = requests.get(state_page_link)
     if (state_page.status_code == 200):
         page = state_page.text
     else:
         logging.error(f"{state_page_link} reported back {state_page.status_code}")
         # raise ValueError
-        continue
+        continue  #  Go to the next state
+
+    clean_name = buc.clean_state_name(this_state)
+    crime_file = './spotcrime.csv'
+    try:
+        spotcrime_df = pd.read_csv(crime_file, header=0)
+        print(spotcrime_df.head())
+        print(f"Size of the current data: {spotcrime_df.shape}")
+    except FileNotFoundError:
+        logging.info(f"{crime_file} not found. Will create new one")
+        pass
+    except pd.errors.EmptyDataError:
+        logging.error(f"{crime_file} had no data. Renaming and will create new one")
+        os.rename(crime_file,crime_file+"_bad")
+        pass
+
+    empty_df = pd.DataFrame()
+
+
+
 
     state_soup = bs(page, "lxml")
     st_table = state_soup.find(class_='main-content-column')
