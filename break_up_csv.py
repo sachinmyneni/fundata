@@ -18,7 +18,10 @@ def testy():
     df = pd.DataFrame(ldic)
     dfs = [x for _, x in df.groupby('letter')]
 
-def break_csv(bigcsv: str) -> dict:
+def clean_state_name(state_name: str) -> str:
+    return state_name.replace(' ','_')
+    
+def break_csv(bigcsv: str, xtract: bool) -> dict:
     full_df = pd.read_csv(bigcsv, compression='infer')
     dfs = [x for _, x in full_df.groupby('State')]
     # statit = get_state(bigcsv)
@@ -28,12 +31,12 @@ def break_csv(bigcsv: str) -> dict:
         cleaned_state_name = state_name.replace(' ','_')
         print(f"Cleaned State name from {state_name} to {cleaned_state_name}")
         name_file_dict[state_name] = 'spotcrime_'+cleaned_state_name+'.csv'
-        print("Write out the CSV here")
-        item.to_csv(name_file_dict[state_name])
+        if xtract:
+            item.to_csv(name_file_dict[state_name])
 
     return name_file_dict
 
 if __name__ == '__main__':
-    nfd = break_csv('spotcrime.csv.1.gz')
+    nfd = break_csv('spotcrime.csv', True)
 
 
