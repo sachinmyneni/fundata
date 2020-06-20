@@ -204,7 +204,7 @@ while True:
                     df_new = df[0]
                 else:
                     df_new = empty_df.append(df[0])
-                sleep(randint(1, 10))
+                sleep(randint(1, 5))
             except AttributeError:
                 logging.error(f"{this_state} -> {this_place} -> {this_date} had no data")
                 dt_array = np.array([None, None, this_date,None, None, this_place, this_state])
