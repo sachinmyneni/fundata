@@ -17,6 +17,7 @@ logging.basicConfig(filename="spotcrime_scrape.log", level=logging.DEBUG,
                     filemode='a', format='%(asctime)s %(message)s')
 
 base_url = 'https://spotcrime.com'
+empty_df = pd.DataFrame()
 
 
 
@@ -51,7 +52,7 @@ while True:
         continue  #  Go to the next state
 
     clean_name = buc.clean_state_name(this_state)
-    crime_file = './spotcrime.csv'
+    crime_file = 'spotcrime_'+clean_name+'.csv'
     try:
         spotcrime_df = pd.read_csv(crime_file, header=0)
         print(spotcrime_df.head())
@@ -63,11 +64,6 @@ while True:
         logging.error(f"{crime_file} had no data. Renaming and will create new one")
         os.rename(crime_file,crime_file+"_bad")
         pass
-
-    empty_df = pd.DataFrame()
-
-
-
 
     state_soup = bs(page, "lxml")
     st_table = state_soup.find(class_='main-content-column')

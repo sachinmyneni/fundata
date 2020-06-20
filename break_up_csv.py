@@ -20,7 +20,7 @@ def testy():
 
 def clean_state_name(state_name: str) -> str:
     return state_name.replace(' ','_')
-    
+
 def break_csv(bigcsv: str, xtract: bool) -> dict:
     full_df = pd.read_csv(bigcsv, compression='infer')
     dfs = [x for _, x in full_df.groupby('State')]
@@ -28,7 +28,7 @@ def break_csv(bigcsv: str, xtract: bool) -> dict:
     name_file_dict = {}
     for item in dfs:
         state_name = item['State'].iloc[0]
-        cleaned_state_name = state_name.replace(' ','_')
+        cleaned_state_name = clean_state_name(state_name)
         print(f"Cleaned State name from {state_name} to {cleaned_state_name}")
         name_file_dict[state_name] = 'spotcrime_'+cleaned_state_name+'.csv'
         if xtract:
