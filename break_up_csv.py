@@ -32,7 +32,8 @@ def break_csv(bigcsv: str, xtract: bool) -> dict:
         print(f"Cleaned State name from {state_name} to {cleaned_state_name}")
         name_file_dict[state_name] = 'spotcrime_'+cleaned_state_name+'.csv'
         if xtract:
-            item.to_csv(name_file_dict[state_name])
+                with open(name_file_dict[state_name], 'a') as sc_f:
+                    item.to_csv(sc_f, header=sc_f.tell() == 0)
 
     return name_file_dict
 
