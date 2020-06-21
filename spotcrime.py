@@ -137,7 +137,7 @@ while True:
                 df_new = df_new.append(empty_df)
             except NameError:
                 df_new = empty_df
-            break  
+            continue  
 
         # print(crime_blotter_table)
         cb_regex = re.compile('Crime Blotter')
