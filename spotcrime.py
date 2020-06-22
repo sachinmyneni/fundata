@@ -7,6 +7,7 @@ from random import randint
 from time import sleep
 import logging
 import os
+import sys
 import urllib3
 import socket
 import random
@@ -14,7 +15,7 @@ import argparse
 import break_up_csv as buc
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--state", help="Name of the state to scrape for")
+parser.add_argument("-s","--state", help="Name of the state to scrape for")
 args = parser.parse_args()
 
 
@@ -31,7 +32,7 @@ try:
 except requests.exceptions.SSLError:
     print("Looks like SSL libraries are not installed?")
     print("????????Or a mismatch in hostname??????????")
-    exit
+    sys.exit()
 
 if (response.status_code == 200):
     page = response.text
@@ -47,7 +48,7 @@ state_dict = {s.text: base_url+s.get('href') for s in state_tag_list}
 while True:
     if args.state:
         this_state = args.state
-        state_page_link = state_dict['this_state']
+        state_page_link = state_dict[this_state]
     else:
         [(this_state,state_page_link)] = random.sample(list(state_dict.items()),1)
     
