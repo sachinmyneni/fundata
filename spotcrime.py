@@ -10,7 +10,12 @@ import os
 import urllib3
 import socket
 import random
+import argparse
 import break_up_csv as buc
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--state", help="Name of the state to scrape for")
+args = parser.parse_args()
 
 
 logging.basicConfig(filename="spotcrime_scrape.log", level=logging.DEBUG,
@@ -40,8 +45,11 @@ state_dict = {s.text: base_url+s.get('href') for s in state_tag_list}
 
 # Alabama
 while True:
-
-    [(this_state,state_page_link)] = random.sample(list(state_dict.items()),1)
+    if args.state:
+        this_state = args.state
+        state_page_link = state_dict['this_state']
+    else:
+        [(this_state,state_page_link)] = random.sample(list(state_dict.items()),1)
     
     state_page = requests.get(state_page_link)
     if (state_page.status_code == 200):
@@ -222,3 +230,5 @@ while True:
                 empty_df = df_new[0:0]  # empty the empty_df
 
         del cbr_date_dict
+    if args.state:
+        break
