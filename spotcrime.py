@@ -23,42 +23,18 @@ logging.basicConfig(filename="spotcrime_scrape.log", level=logging.DEBUG,
                     filemode='a', format='%(asctime)s %(message)s')
 
 base_url = 'https://spotcrime.com'
-empty_df = pd.DataFrame()
 
 
 
-try:
-    response = requests.get(base_url)
-except requests.exceptions.SSLError:
-    print("Looks like SSL libraries are not installed?")
-    print("????????Or a mismatch in hostname??????????")
-    sys.exit()
-
-if (response.status_code == 200):
-    page = response.text
-else:
-    logging.error(f"{base_url} reported back {response.status_code}")
-    raise ValueError
-
-soup = bs(page, "lxml")
-state_tag_list = soup.find(id="states-list-menu").find_all('a')
-state_dict = {s.text: base_url+s.get('href') for s in state_tag_list}
-
-# Alabama
-while True:
-    if args.state:
-        this_state = args.state
-        state_page_link = state_dict[this_state]
-    else:
-        [(this_state,state_page_link)] = random.sample(list(state_dict.items()),1)
-    
+def get_crime_stats(state_page_link: str, this_state: str):
+    empty_df = pd.DataFrame()
     state_page = requests.get(state_page_link)
     if (state_page.status_code == 200):
         page = state_page.text
     else:
         logging.error(f"{state_page_link} reported back {state_page.status_code}")
         # raise ValueError
-        continue  #  Go to the next state
+        return  #  Go to the next state
 
     clean_name = buc.clean_state_name(this_state)
     crime_file = 'spotcrime_'+clean_name+'.csv'
@@ -142,10 +118,14 @@ while True:
             dt_array = np.array([None, None, None,None, None, this_place,this_state])
             empty_df = pd.DataFrame(dt_array.reshape(1,-1))
             logging.error(f"{this_state}->{this_place} had no data")
-            try:
+            if df_new:
                 df_new = df_new.append(empty_df)
-            except NameError:
+            else:
                 df_new = empty_df
+            # try:
+            #     df_new = df_new.append(empty_df)
+            # except NameError:
+            #     df_new = empty_df
             continue  
 
         # print(crime_blotter_table)
@@ -231,5 +211,36 @@ while True:
                 empty_df = df_new[0:0]  # empty the empty_df
 
         del cbr_date_dict
+
+
+def main():
+    try:
+        response = requests.get(base_url)
+    except requests.exceptions.SSLError:
+        print("Looks like SSL libraries are not installed?")
+        print("????????Or a mismatch in hostname??????????")
+        sys.exit()
+
+    if (response.status_code == 200):
+        page = response.text
+    else:
+        logging.error(f"{base_url} reported back {response.status_code}")
+        raise ValueError
+
+    soup = bs(page, "lxml")
+    state_tag_list = soup.find(id="states-list-menu").find_all('a')
+    state_dict = {s.text: base_url+s.get('href') for s in state_tag_list}
+
+    # Alabama
+
     if args.state:
-        break
+        this_state = args.state
+        state_page_link = state_dict[this_state]
+        get_crime_stats(state_page_link,this_state)
+    else:
+        while True:
+            [(this_state,state_page_link)] = random.sample(list(state_dict.items()),1)
+            get_crime_stats(state_page_link,this_state)
+
+if __name__ == "__main__":
+    main()
