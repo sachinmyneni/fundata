@@ -118,14 +118,14 @@ def get_crime_stats(state_page_link: str, this_state: str):
             dt_array = np.array([None, None, None,None, None, this_place,this_state])
             empty_df = pd.DataFrame(dt_array.reshape(1,-1))
             logging.error(f"{this_state}->{this_place} had no data")
-            if df_new:
-                df_new = df_new.append(empty_df)
-            else:
-                df_new = empty_df
-            # try:
+            # if df_new:
             #     df_new = df_new.append(empty_df)
-            # except NameError:
+            # else:
             #     df_new = empty_df
+            try:
+                df_new = df_new.append(empty_df)
+            except NameError:
+                df_new = empty_df
             continue  
 
         # print(crime_blotter_table)
