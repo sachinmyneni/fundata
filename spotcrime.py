@@ -42,6 +42,9 @@ def get_crime_stats(state_page_link: str, this_state: str):
         spotcrime_df = pd.read_csv(crime_file, header=0)
         print(spotcrime_df.head())
         print(f"Size of the current data: {spotcrime_df.shape}")
+    except pd.errors.ParserError:
+        logging.error(f"{crime_file} needs to be cleaned up.")
+        sys.exit(1)
     except FileNotFoundError:
         logging.info(f"{crime_file} not found. Will create new one")
         pass
