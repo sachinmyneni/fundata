@@ -89,7 +89,7 @@ def get_crime_stats(state_page_link: str, this_state: str):
         # Some places have no data
         if crime_blotter_table.find('h3').text == 'No data found.':
             logging.error(f"{this_state}->{this_place} had no data")
-            break  #  Since this place has no data go back to the next place.
+            continue  #  Since this place has no data go back to the next place.
         # print(crime_blotter_table)
         cb_regex = re.compile('Crime Blotter')
         cbr_date_dict = {}
