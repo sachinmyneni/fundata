@@ -125,11 +125,12 @@ def get_crime_stats(state_page_link: str, this_state: str):
             #     df_new = df_new.append(empty_df)
             # else:
             #     df_new = empty_df
-            try:
-                df_new = df_new.append(empty_df)
-            except NameError:
-                df_new = empty_df
-            continue  
+            if len(cbr_date_dict) == 0
+                try:
+                    df_new = df_new.append(empty_df)
+                except NameError:
+                    df_new = empty_df
+                continue  
 
         # print(crime_blotter_table)
         cb_regex = re.compile('Crime Blotter')
