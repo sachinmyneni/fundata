@@ -16,6 +16,7 @@ import break_up_csv as buc
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-s","--state", help="Name of the state to scrape for")
+parser.add_argument("-p","--place", help="Name of the place to scrape for; State should be provided")
 args = parser.parse_args()
 
 
@@ -26,7 +27,7 @@ base_url = 'https://spotcrime.com'
 
 
 
-def get_crime_stats(state_page_link: str, this_state: str):
+def get_crime_stats(state_page_link: str, this_state: str, this_place: str = None):
     empty_df = pd.DataFrame()
     state_page = requests.get(state_page_link)
     if (state_page.status_code == 200):
@@ -72,7 +73,15 @@ def get_crime_stats(state_page_link: str, this_state: str):
         dates would overwrite the dict with same value for the key.'''
     # Alabama -> Alexander City
     while True:
-        [(this_place,this_place_link)] = random.sample(list(dcr_dict.items()),1)
+        if this_place:
+            try:
+                this_place = this_place.lower()
+                this_place_link = dcr_dict[this_place]
+            except KeyError:
+                logging.error(f"The provided place: {this_place} does not exist in the list of places")
+                return
+        else:
+            [(this_place,this_place_link)] = random.sample(list(dcr_dict.items()),1)
         logging.info(f"Getting stats for {this_place}")
         place_page = requests.get(this_place_link)
         assert this_place.split("_")[0] in place_page.url, f"{this_place} is not in {place_page.url}"
@@ -240,7 +249,10 @@ def main():
     if args.state:
         this_state = args.state
         state_page_link = state_dict[this_state]
-        get_crime_stats(state_page_link,this_state)
+        if args.place:
+            get_crime_stats(state_page_link,this_state,args.place)
+        else:
+            get_crime_stats(state_page_link,this_state)
     else:
         while True:
             [(this_state,state_page_link)] = random.sample(list(state_dict.items()),1)
