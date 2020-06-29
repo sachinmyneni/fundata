@@ -73,14 +73,17 @@ def get_crime_stats(state_page_link: str, this_state: str, this_place: str = Non
         dates would overwrite the dict with same value for the key.'''
     # Alabama -> Alexander City
     while True:
-        if this_place:
-            try:
-                this_place = this_place.lower()
-                this_place_link = dcr_dict[this_place]
-            except KeyError:
-                logging.error(f"The provided place: {this_place} does not exist in the list of places")
-                return
-        else:
+        try:
+            if this_place:
+                try:
+                    this_place = this_place.lower()
+                    this_place_link = dcr_dict[this_place]
+                except KeyError:
+                    logging.error(f"The provided place: {this_place} does not exist in the list of places")
+                    return
+            else:
+                [(this_place,this_place_link)] = random.sample(list(dcr_dict.items()),1)
+        except UnboundLocalError:
             [(this_place,this_place_link)] = random.sample(list(dcr_dict.items()),1)
         logging.info(f"Getting stats for {this_place}")
         place_page = requests.get(this_place_link)
@@ -224,6 +227,7 @@ def get_crime_stats(state_page_link: str, this_state: str, this_place: str = Non
                 empty_df = df_new[0:0]  # empty the empty_df
 
         del cbr_date_dict
+        del this_place
 
 
 def main():
