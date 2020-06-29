@@ -220,7 +220,7 @@ def get_crime_stats(state_page_link: str, this_state: str, this_place: str = Non
                     df_new = empty_df
 
             with open(crime_file, 'a') as sc_f:
-                df_new.to_csv(sc_f, header=sc_f.tell() == 0)
+                df_new.to_csv(sc_f, header=sc_f.tell() == 0, index=False)
                 empty_df = df_new[0:0]  # empty the empty_df
 
         del cbr_date_dict
